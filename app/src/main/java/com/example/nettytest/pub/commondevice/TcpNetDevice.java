@@ -1,8 +1,6 @@
 package com.example.nettytest.pub.commondevice;
 
 
-import java.net.SocketAddress;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
