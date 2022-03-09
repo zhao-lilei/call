@@ -1,5 +1,9 @@
 package com.example.nettytest.userinterface;
 
+import com.alibaba.fastjson.*;
+import com.example.nettytest.pub.AudioMode;
+import com.example.nettytest.pub.JsonPort;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,10 +15,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
-import com.alibaba.fastjson.*;
-import com.example.nettytest.pub.AudioMode;
-import com.example.nettytest.pub.JsonPort;
 
 public class PhoneParam {
     final static String JSON_SERVE_NAME = "server";

@@ -1,7 +1,5 @@
 package com.example.nettytest.terminal.test;
 
-import com.example.nettytest.userinterface.UserCallMessage;
-
 class LocalAlertInfo{
     public final static int LOCAL_ALERT_STATUS_OUTGOING = 1;
     public final static int LOCAL_ALERT_STATUS_SUCC = 2;

@@ -1,18 +1,16 @@
 package com.example.nettytest.terminal.test;
 
 import com.alibaba.fastjson.*;
-import com.example.nettytest.pub.LogWork;
 import com.example.nettytest.pub.SystemSnap;
-import com.example.nettytest.pub.phonecall.CommonCall;
 import com.example.nettytest.pub.result.FailReason;
+import com.example.nettytest.pub.result.OperationResult;
 import com.example.nettytest.userinterface.ListenCallMessage;
+import com.example.nettytest.userinterface.PhoneParam;
 import com.example.nettytest.userinterface.TerminalDeviceInfo;
 import com.example.nettytest.userinterface.TestInfo;
 import com.example.nettytest.userinterface.TransferMessage;
 import com.example.nettytest.userinterface.UserAlertMessage;
 import com.example.nettytest.userinterface.UserCallMessage;
-import com.example.nettytest.pub.result.OperationResult;
-import com.example.nettytest.userinterface.PhoneParam;
 import com.example.nettytest.userinterface.UserConfigMessage;
 import com.example.nettytest.userinterface.UserDevice;
 import com.example.nettytest.userinterface.UserDevsMessage;

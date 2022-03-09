@@ -1,6 +1,5 @@
 package com.androidport.port.audio;
 
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -9,13 +8,11 @@ import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.MediaStore;
-
 
 import com.android.webrtc.audio.MobileAEC;
+import com.example.nettytest.pub.AudioMode;
 import com.example.nettytest.pub.LogWork;
 import com.example.nettytest.pub.UniqueIDManager;
-import com.example.nettytest.pub.AudioMode;
 import com.example.nettytest.userinterface.PhoneParam;
 import com.example.nettytest.userinterface.UserInterface;
 import com.qd.gtcom.wangzhengcheng.ns.AgcUtils;

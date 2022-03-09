@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 

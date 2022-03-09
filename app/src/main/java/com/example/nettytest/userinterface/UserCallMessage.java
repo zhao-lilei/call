@@ -1,7 +1,7 @@
 package com.example.nettytest.userinterface;
 
-import com.example.nettytest.pub.result.FailReason;
 import com.example.nettytest.pub.AudioMode;
+import com.example.nettytest.pub.result.FailReason;
 
 public class UserCallMessage extends UserMessage {
 

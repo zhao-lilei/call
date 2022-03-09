@@ -42,7 +42,6 @@ import com.example.nettytest.userinterface.UserCallMessage;
 import com.example.nettytest.userinterface.UserInterface;
 import com.example.nettytest.userinterface.UserMessage;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

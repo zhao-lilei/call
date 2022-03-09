@@ -1,18 +1,14 @@
 package com.androidport;
 
 import android.annotation.SuppressLint;
-import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
-import android.media.MediaRecorder;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -24,21 +20,16 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.aecmdelaytest.AecmDelayTest;
-import com.aecmdelaytest.MusicData;
 import com.androidport.port.CallMsgReceiver;
 import com.androidport.port.TerminalUserMsgReceiver;
-import com.androidport.port.audio.AudioMgr;
 import com.example.nettytest.R;
 import com.example.nettytest.pub.HandlerMgr;
 import com.example.nettytest.pub.LogWork;
-import com.example.nettytest.pub.protocol.ProtocolFactory;
 import com.example.nettytest.terminal.test.ClientTest;
 import com.example.nettytest.terminal.test.ServerTest;
 import com.example.nettytest.terminal.test.TestDevice;
@@ -53,8 +44,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
-import java.sql.Time;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 

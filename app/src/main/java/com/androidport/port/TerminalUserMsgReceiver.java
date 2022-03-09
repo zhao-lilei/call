@@ -4,6 +4,7 @@ package com.androidport.port;
 import android.os.Handler;
 import android.os.Message;
 
+import com.androidport.port.audio.AudioMgr;
 import com.example.nettytest.pub.CallPubMessage;
 import com.example.nettytest.pub.LogWork;
 import com.example.nettytest.pub.MsgReceiver;
@@ -11,7 +12,6 @@ import com.example.nettytest.userinterface.UserCallMessage;
 import com.example.nettytest.userinterface.UserInterface;
 import com.example.nettytest.userinterface.UserMessage;
 import com.example.nettytest.userinterface.UserVideoMessage;
-import com.androidport.port.audio.AudioMgr;
 
 import java.util.ArrayList;
 
