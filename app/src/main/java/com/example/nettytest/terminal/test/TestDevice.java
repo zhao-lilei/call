@@ -1,6 +1,8 @@
 package com.example.nettytest.terminal.test;
 
-import com.alibaba.fastjson.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.example.nettytest.pub.SystemSnap;
 import com.example.nettytest.pub.result.FailReason;
 import com.example.nettytest.pub.result.OperationResult;
@@ -126,7 +128,7 @@ public class TestDevice extends UserDevice{
         result = UserInterface.BuildAlert(devid,type);
         if(result.result == OperationResult.OP_RESULT_OK){
             LocalAlertInfo alertInfo = new LocalAlertInfo();
-            
+
             alertInfo.status = LocalAlertInfo.LOCAL_ALERT_STATUS_OUTGOING;
             alertInfo.alertDev = devid;
             alertInfo.alertId = result.callID;
@@ -185,7 +187,7 @@ public class TestDevice extends UserDevice{
 
         snapRes = snap.toString();
         snap.clear();
-        
+
         return snapRes.getBytes();
     }
 
@@ -208,7 +210,7 @@ public class TestDevice extends UserDevice{
 // in listen mode, phone will answer when call out
 //            isCallOut = false;
 
-// call status is not connected. answer maybe fail           
+// call status is not connected. answer maybe fail
 // but status is not connected, phone will maybe answer other call.
 //            talkPeer = GetIncomingCaller(callid);
             UserInterface.PrintLog("Answer Incoming Call %s by Dev %s and Set talkPeer=%s",callid,devid,talkPeer);
@@ -234,7 +236,7 @@ public class TestDevice extends UserDevice{
     }
 
     public void QueryConfig() {UserInterface.QueryDevConfig(devid);}
-    
+
     public void QuerySystemConfig() {
         UserInterface.QuerySystemConfig(devid);
     }
@@ -250,7 +252,7 @@ public class TestDevice extends UserDevice{
         OperationResult result;
         result = UserInterface.EndCall(devid,callid);
 //        UserInterface.EndCall("20105105",callid);
-        
+
         if (outGoingCall.callID.compareToIgnoreCase(callid) == 0) {
             if(outGoingCall.status== LocalCallInfo.LOCAL_CALL_STATUS_CONNECTED){
                 talkPeer = "";
@@ -285,26 +287,26 @@ public class TestDevice extends UserDevice{
         if(tvIndex==0) {
             if (type == UserInterface.CALL_BED_DEVICE||type==UserInterface.CALL_EMERGENCY_DEVICE) {
                 if(selected==0){  // make call or cancel call
-                    if (inComingCallInfos.size() == 0) {
-                        if (!isCallOut) {
+                    if (!isCallOut) {
+                        if (inComingCallInfos.size()==0) {
                             if(type==UserInterface.CALL_EMERGENCY_DEVICE)
                                 opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_EMERGENCY_TYPE);
                             else{
-                                opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_NORMAL_TYPE);
-    //                            opResult = BuildAlert(1);
+                                opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_ASSIST_TYPE);
+                                //                            opResult = BuildAlert(1);
                             }
                             if(opResult.result != OperationResult.OP_RESULT_OK){
                                 UserInterface.PrintLog("DEV %s Make Call Fail",devid);
                             }else{
                                 result = true;
                             }
-                        } else {
-                            opResult = EndCall(outGoingCall.callID);
-                            if(opResult.result != OperationResult.OP_RESULT_OK){
-                                UserInterface.PrintLog("DEV %s End Call %s Fail",devid,outGoingCall.callID);
-                            }else{
-                                result = true;
-                            }
+                        }
+                    } else {
+                        opResult = EndCall(outGoingCall.callID);
+                        if(opResult.result != OperationResult.OP_RESULT_OK){
+                            UserInterface.PrintLog("DEV %s End Call %s Fail",devid,outGoingCall.callID);
+                        }else{
+                            result = true;
                         }
                     }
                 }else{
@@ -382,7 +384,7 @@ public class TestDevice extends UserDevice{
                             }else{
                                 result = true;
                             }
-                        }else if(callInfo.callType==UserCallMessage.NORMAL_CALL_TYPE){
+                        }else if(callInfo.callType==UserCallMessage.NORMAL_CALL_TYPE||callInfo.callType==UserInterface.CALL_ASSIST_TYPE){
                             if(talkPeer.isEmpty()) {
                                 opResult = AnswerCall(callInfo.callID);
                                 if(opResult.result!=OperationResult.OP_RESULT_OK){
@@ -440,7 +442,7 @@ public class TestDevice extends UserDevice{
                         if(type==UserInterface.CALL_BED_DEVICE){
                             if(isCallOut){
 //                                if(outGoingCall.status== LocalCallInfo.LOCAL_CALL_STATUS_CONNECTED)
-                                    EndCall(outGoingCall.callID);
+                                EndCall(outGoingCall.callID);
                             }else{
                                 BuildCall(PhoneParam.CALL_SERVER_ID, UserInterface.CALL_NORMAL_TYPE);
                             }
@@ -583,7 +585,7 @@ public class TestDevice extends UserDevice{
 
                     inComingAlertList.add(info);
                     UserInterface.PrintLog("Recv Incoming Alert %s in Dev %s ",info.alertId,devid);
-                    UserInterface.PrintLog("Caller name %s, area %s, room %s(%s)",msg.deviceName,msg.areaId,msg.roomId,msg.roomName);
+                    UserInterface.PrintLog("%s Alert %d , area %s, room %s(%s), dev %s, bed %s, voice %s, display %s",msg.alertDevId,msg.alertType,msg.areaId,msg.roomId,msg.roomName,msg.deviceName,msg.bedName,msg.voiceInfo,msg.displayInfo);
                     break;
                 case UserAlertMessage.ALERT_MESSAGE_SUCC:
                     info = null;
@@ -648,11 +650,11 @@ public class TestDevice extends UserDevice{
                     break;
                 case UserCallMessage.CALL_MESSAGE_DISCONNECT:
                 case UserCallMessage.CALL_MESSAGE_UPDATE_FAIL:
-                case UserCallMessage.CALL_MESSAGE_END_FAIL:    
+                case UserCallMessage.CALL_MESSAGE_END_FAIL:
                 case UserCallMessage.CALL_MESSAGE_INVITE_FAIL:
                 case UserCallMessage.CALL_MESSAGE_UNKNOWFAIL:
                     if(msg.type==UserCallMessage.CALL_MESSAGE_DISCONNECT){
-                        UserInterface.PrintLog("DEV %s Recv End Msg for Call %s, reason is %s",devid,msg.callId,UserCallMessage.GetEndReasonName(msg.endReason));
+                        UserInterface.PrintLog("DEV %s Recv End Msg for Call %s calltype=%d, reason is %s",devid,msg.callId,msg.callType,UserCallMessage.GetEndReasonName(msg.endReason));
                     }
                     if (outGoingCall.status!= LocalCallInfo.LOCAL_CALL_STATUS_DISCONNECT&&msg.callId.compareToIgnoreCase(outGoingCall.callID) == 0) {
                         if (outGoingCall.status == LocalCallInfo.LOCAL_CALL_STATUS_CONNECTED) {
@@ -684,14 +686,14 @@ public class TestDevice extends UserDevice{
                     if(outGoingCall.status== LocalCallInfo.LOCAL_CALL_STATUS_RINGING&&outGoingCall.callID.compareToIgnoreCase(msg.callId)==0) {
                         outGoingCall.status = LocalCallInfo.LOCAL_CALL_STATUS_CONNECTED;
                         outGoingCall.answer = msg.operaterId;
-                        UserInterface.PrintLog("Recv Answered Outgoing Call %s in Dev %s", outGoingCall.callID,devid);
+                        UserInterface.PrintLog("Recv Answered Outgoing Call %s in Dev %s, call type = %d", outGoingCall.callID,devid,msg.callType);
                         talkPeer = outGoingCall.answer;
                     }else{
                         UserInterface.PrintLog("ERROR! %s Recv Answered of Call %s , but outgoingcall status = %d", devid, msg.callId,outGoingCall.status);
                     }
                     break;
                 case UserCallMessage.CALL_MESSAGE_UPDATE_SUCC:
-                        UserInterface.PrintLog("Recv Update Succ for Call %s in Dev %s", msg.callId,devid);
+                    UserInterface.PrintLog("Recv Update Succ for Call %s in Dev %s", msg.callId,devid);
                     break;
                 case UserCallMessage.CALL_MESSAGE_INCOMING:
                     LocalCallInfo info = new LocalCallInfo();
@@ -701,7 +703,7 @@ public class TestDevice extends UserDevice{
                     info.caller = msg.callerId;
                     info.callType = msg.callType;
                     inComingCallInfos.add(info);
-                    UserInterface.PrintLog("Recv Incoming Call %s in Dev %s ",info.callID,devid);
+                    UserInterface.PrintLog("Recv Incoming Call %s , calltype =%d in Dev %s ",info.callID,msg.callType,devid);
                     UserInterface.PrintLog("Caller name %s, area %s, room %s(%s)",msg.deviceName,msg.areaId,msg.roomId,msg.roomName);
                     Integer count = inComingCallRecord.get(info.caller);
                     if(count==null){
@@ -714,7 +716,7 @@ public class TestDevice extends UserDevice{
                     for (LocalCallInfo info1 : inComingCallInfos) {
                         if (info1.callID.compareToIgnoreCase(msg.callId) == 0) {
                             info1.status = LocalCallInfo.LOCAL_CALL_STATUS_CONNECTED;
-                            UserInterface.PrintLog("Set Incoming Call %s Connected in Dev %s",  info1.callID,devid);
+                            UserInterface.PrintLog("Set Incoming Call %s Connected in Dev %s calltype=%d",  info1.callID,devid,msg.callType);
                             talkPeer = info1.caller;
                             isFindMatched = true;
                             break;
@@ -751,7 +753,7 @@ public class TestDevice extends UserDevice{
 
     public void StartVideo(){
         String callId=null;
-        
+
         if(outGoingCall.status==LocalCallInfo.LOCAL_CALL_STATUS_CONNECTED)
             callId = outGoingCall.callID;
         else{
@@ -777,7 +779,7 @@ public class TestDevice extends UserDevice{
             isVideo = false;
         }
     }
-    
+
     private String GetRandomBedDeviceId(){
         int bedNum ;
         int iTmp;
@@ -813,7 +815,7 @@ public class TestDevice extends UserDevice{
         else
             return null;
     }
-    
+
     public String GetCallInfo(){
         String status="" ;
         for (LocalCallInfo callInfo : inComingCallInfos) {
@@ -875,7 +877,7 @@ public class TestDevice extends UserDevice{
         if(!isRight){
             failReason = String.format("DEV %s has %d Talking Calls %s",devid,talkNum,talkCallId);
         }
-        
+
         if(talkNum==0&&!talkPeer.isEmpty()){
             isRight = false;
             UserInterface.PrintLog("Find Dev %s have 0 Connected Call, but talkPeer is %s Not empty",devid,talkPeer);

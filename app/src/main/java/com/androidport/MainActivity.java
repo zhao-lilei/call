@@ -382,7 +382,7 @@ public class    MainActivity extends AppCompatActivity {
 //            AudioMgr.RestartAudio();
             if(clientTest!=null) {
                 TestDevice dev = clientTest.GetCurTestDevice();
-                dev.BuildAlert(41);
+                dev.BuildAlert(42);
                 UpdateHMI();
             }
         });

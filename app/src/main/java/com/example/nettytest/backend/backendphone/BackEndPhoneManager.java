@@ -304,15 +304,23 @@ public class BackEndPhoneManager {
                 result = FailReason.FAIL_REASON_HASEXIST;
             }else{
                 area = new BackEndZone(areaId,areaName);
-                serverAreaLists.put(areaId,area);
-                ArrayList<AlertConfig> configs = new ArrayList<>();
-                AlertConfig defaultConfig = new AlertConfig();
-                defaultConfig.alertType = 41;
-                defaultConfig.displayInfo= "皮试完成";
-                defaultConfig.voiceInfo = "皮试完成";
-                defaultConfig.nameType = AlertConfig.USE_BED_NAME;
-                configs.add(defaultConfig);
-                area.alertConfigList = configs;
+                area.alertConfigList = PhoneParam.alertList;
+//                ArrayList<AlertConfig> configs = new ArrayList<>();
+//                AlertConfig defaultConfig = new AlertConfig();
+//                defaultConfig.alertType = 41;
+//                defaultConfig.displayInfo= "皮试完成";
+//                defaultConfig.voiceInfo = "皮试完成";
+//                defaultConfig.nameType = AlertConfig.USE_BED_NAME;
+//                configs.add(defaultConfig);
+//
+//                defaultConfig = new AlertConfig();
+//                defaultConfig.alertType = 42;
+//                defaultConfig.displayInfo= "餐后血糖测试";
+//                defaultConfig.voiceInfo = "餐后血糖测试";
+//                defaultConfig.nameType = AlertConfig.USE_BED_NAME;
+//                configs.add(defaultConfig);
+//
+//                area.alertConfigList = configs;
             }
         }
         return result;

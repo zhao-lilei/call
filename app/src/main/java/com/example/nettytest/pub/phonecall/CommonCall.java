@@ -121,4 +121,11 @@ public class CommonCall {
         return typeName;
     }
 
+    public static boolean IsAlertCall(int type){
+        boolean result = false;
+        if(type>=ALERT_TYPE_BEGIN&&type<=ALERT_TYPE_ENDED)
+            result = true;
+        return result;
+    }
+
 }

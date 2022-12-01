@@ -1,21 +1,10 @@
 package com.example.nettytest.terminal.terminalcall;
 
 import com.example.nettytest.pub.AudioMode;
-import com.example.nettytest.pub.HandlerMgr;
-import com.example.nettytest.pub.LogWork;
-import com.example.nettytest.pub.UniqueIDManager;
-import com.example.nettytest.pub.phonecall.CommonCall;
-import com.example.nettytest.pub.protocol.AnswerReqPack;
-import com.example.nettytest.pub.protocol.AnswerResPack;
 import com.example.nettytest.pub.protocol.AnswerVideoReqPack;
 import com.example.nettytest.pub.protocol.AnswerVideoResPack;
 import com.example.nettytest.pub.protocol.CancelReqPack;
 import com.example.nettytest.pub.protocol.CancelResPack;
-import com.example.nettytest.pub.protocol.EndReqPack;
-import com.example.nettytest.pub.protocol.EndResPack;
-import com.example.nettytest.pub.protocol.InviteReqPack;
-import com.example.nettytest.pub.protocol.InviteResPack;
-import com.example.nettytest.pub.protocol.ProtocolPacket;
 import com.example.nettytest.pub.protocol.StartVideoReqPack;
 import com.example.nettytest.pub.protocol.StartVideoResPack;
 import com.example.nettytest.pub.protocol.StopVideoReqPack;
@@ -24,12 +13,23 @@ import com.example.nettytest.pub.protocol.UpdateReqPack;
 import com.example.nettytest.pub.protocol.UpdateResPack;
 import com.example.nettytest.pub.result.FailReason;
 import com.example.nettytest.pub.result.OperationResult;
-import com.example.nettytest.pub.transaction.Transaction;
-import com.example.nettytest.terminal.terminalphone.TerminalPhone;
-import com.example.nettytest.userinterface.PhoneParam;
 import com.example.nettytest.userinterface.TerminalDeviceInfo;
 import com.example.nettytest.userinterface.UserAlertMessage;
 import com.example.nettytest.userinterface.UserCallMessage;
+import com.example.nettytest.pub.HandlerMgr;
+import com.example.nettytest.pub.LogWork;
+import com.example.nettytest.pub.UniqueIDManager;
+import com.example.nettytest.pub.phonecall.CommonCall;
+import com.example.nettytest.pub.protocol.AnswerReqPack;
+import com.example.nettytest.pub.protocol.AnswerResPack;
+import com.example.nettytest.pub.protocol.EndReqPack;
+import com.example.nettytest.pub.protocol.EndResPack;
+import com.example.nettytest.pub.protocol.InviteReqPack;
+import com.example.nettytest.pub.protocol.InviteResPack;
+import com.example.nettytest.pub.protocol.ProtocolPacket;
+import com.example.nettytest.pub.transaction.Transaction;
+import com.example.nettytest.userinterface.PhoneParam;
+import com.example.nettytest.terminal.terminalphone.TerminalPhone;
 import com.example.nettytest.userinterface.UserInterface;
 import com.example.nettytest.userinterface.UserMessage;
 import com.example.nettytest.userinterface.UserVideoMessage;
@@ -83,7 +83,7 @@ public class TerminalCall extends CommonCall {
         LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Invite From %s to %s, CallID = %s",devID,caller,callee,callID);
         HandlerMgr.AddPhoneTrans(pack.msgID,inviteResTransaction);
 
-        if(pack.callType>=CommonCall.ALERT_TYPE_BEGIN&&pack.callType<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(pack.callType)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.type = UserMessage.ALERT_MESSAGE_INCOMING;
             alertMsg.devId = devID;
@@ -162,7 +162,7 @@ public class TerminalCall extends CommonCall {
     }
 
     public int StartVideo(){
-        
+
         StartVideoReqPack startVideoReqP = BuildStartVideoPacket();
 
         LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Start Video in Call %s! ",devID,callID);
@@ -190,7 +190,7 @@ public class TerminalCall extends CommonCall {
     }
 
     public int StopVideo(){
-        
+
         StopVideoReqPack stopPack = BuildStopVideoPacket();
         UserVideoMessage videoMsg = new UserVideoMessage();
         videoMsg.type = UserMessage.CALL_VIDEO_END;
@@ -227,7 +227,7 @@ public class TerminalCall extends CommonCall {
         Transaction endTransaction = new Transaction(devID,endPack,Transaction.TRANSCATION_DIRECTION_C2S);
         HandlerMgr.AddPhoneTrans(endPack.msgID,endTransaction);
 
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.type = UserAlertMessage.ALERT_MESSAGE_END;
             alertMsg.devId = devID;
@@ -242,15 +242,15 @@ public class TerminalCall extends CommonCall {
             callMsg.callId = callID;
             callMsg.callType = type;
             callMsg.endReason = UserCallMessage.CALL_END_BY_SELF;
-    //        if(!audioId.isEmpty())
-    //            AudioMgr.CloseAudio(audioId);
+            //        if(!audioId.isEmpty())
+            //            AudioMgr.CloseAudio(audioId);
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
         }
         return ProtocolPacket.STATUS_OK;
     }
 
     public void UpdateByInviteRes(InviteResPack packet){
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
 
             alertMsg.devId = devID;
@@ -273,7 +273,7 @@ public class TerminalCall extends CommonCall {
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_ALERT_INFO,alertMsg);
         }else{
             UserCallMessage callMsg = new UserCallMessage();
-            
+
             callMsg.devId = devID;
             callMsg.callId = callID;
             callMsg.callType = type;
@@ -290,17 +290,17 @@ public class TerminalCall extends CommonCall {
                 callMsg.type = UserCallMessage.CALL_MESSAGE_INVITE_FAIL;
                 callMsg.reason = OperationResult.GetUserFailReason(packet.status);
             }
-            
+
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
         }
     }
 
-   public void UpdateByAnswerRes(AnswerResPack pack){
+    public void UpdateByAnswerRes(AnswerResPack pack){
         UserCallMessage callMsg = new UserCallMessage();
-        
+
         callMsg.devId = devID;
         callMsg.callId = callID;
-        callMsg.callerType = type;
+        callMsg.callType = type;
 
         if(pack.status==ProtocolPacket.STATUS_OK){
             int audioMode;
@@ -316,11 +316,11 @@ public class TerminalCall extends CommonCall {
             LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Answer Call %s! sample=%d,ptime=%d,codec=%d",devID,callID,audioSample,rtpTime,audioCodec);
 //        audioId = AudioMgr.OpenAudio(devID,localRtpPort,remoteRtpPort,remoteRtpAddress,audioSample,rtpTime,audioCodec,audioMode);
 
-            LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv OK for Answer in Call %s! ",devID,callID);
+            LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv OK for Answer in Call %s calltype=%d! ",devID,callID,callMsg.callType);
             state = CommonCall.CALL_STATE_CONNECTED;
             callMsg.type = UserCallMessage.CALL_MESSAGE_CONNECT;
             callMsg.reason = FailReason.FAIL_REASON_NO;
-            
+
 
             callMsg.localRtpPort = localRtpPort;
             callMsg.remoteRtpPort = remoteRtpPort;
@@ -336,9 +336,9 @@ public class TerminalCall extends CommonCall {
             callMsg.type = UserCallMessage.CALL_MESSAGE_ANSWER_FAIL;
             callMsg.reason = OperationResult.GetUserFailReason(pack.status);
         }
-        
+
         HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
-   }
+    }
 
     public void UpdateByUpdateRes(UpdateResPack pack){
 
@@ -350,7 +350,7 @@ public class TerminalCall extends CommonCall {
 
         }
 
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.devId = devID;
             alertMsg.alertID= pack.callid;
@@ -367,7 +367,7 @@ public class TerminalCall extends CommonCall {
             }
 
             HandlerMgr.SendMessageToUser(UserMessage.MESSAGE_ALERT_INFO,alertMsg);
-       }else{
+        }else{
             UserCallMessage callMsg = new UserCallMessage();
             callMsg.devId = devID;
             callMsg.callId = pack.callid;
@@ -385,7 +385,7 @@ public class TerminalCall extends CommonCall {
 
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
         }
-        
+
 
     }
 
@@ -400,7 +400,7 @@ public class TerminalCall extends CommonCall {
             state = CommonCall.CALL_STATE_DISCONNECTED;
             callMsg.type = UserCallMessage.CALL_MESSAGE_END_FAIL;
             callMsg.reason = OperationResult.GetUserFailReason(pack.status);
-            
+
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
 
         }else{
@@ -442,7 +442,7 @@ public class TerminalCall extends CommonCall {
         Transaction endResTrans = new Transaction(devID,cancelReqP,cancelResP,Transaction.TRANSCATION_DIRECTION_C2S);
         HandlerMgr.AddPhoneTrans(cancelResP.msgID,endResTrans);
 
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.devId = devID;
             alertMsg.alertID = cancelReqP.callID;
@@ -458,10 +458,11 @@ public class TerminalCall extends CommonCall {
             callMsg.type = UserMessage.CALL_MESSAGE_DISCONNECT;
             callMsg.endReason = UserCallMessage.CALL_CANCEL_FOR_SERVER;
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
+            LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Call Cancel Req for CallID  %s , call Type %d from Server  ",devID,callID,type);
         }
         return result;
     }
-    
+
     public void RecvEnd(EndReqPack pack){
 
 //        if(!audioId.isEmpty())
@@ -472,7 +473,7 @@ public class TerminalCall extends CommonCall {
         LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Call End Req for CallID = %s from Dev %s, Reason is %s, and Send End Res to Server! ",devID,callID,pack.endDevID,EndReqPack.GetEndReasonName(pack.endReason));
         HandlerMgr.AddPhoneTrans(endResPack.msgID,endResTrans);
 
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.devId = devID;
             alertMsg.alertID = pack.callID;
@@ -489,7 +490,8 @@ public class TerminalCall extends CommonCall {
             callMsg.endReason = pack.endReason;
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
         }
-        
+        LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Call End Req for CallID  %s , call Type %d from Server  ",devID,callID,type);
+
     }
 
 
@@ -538,7 +540,7 @@ public class TerminalCall extends CommonCall {
     }
 
 
-   public int RecvAnswer(AnswerReqPack pack){
+    public int RecvAnswer(AnswerReqPack pack){
         int status = ProtocolPacket.STATUS_OK;
         AnswerResPack answerResPack = new AnswerResPack(ProtocolPacket.STATUS_OK,pack);
         UserCallMessage callMsg = new UserCallMessage();
@@ -550,7 +552,7 @@ public class TerminalCall extends CommonCall {
         callMsg.operaterId = pack.answerer;
 
         answer = pack.answerer;
-        
+
         state = CommonCall.CALL_STATE_CONNECTED;
         remoteRtpPort = pack.answererRtpPort;
         remoteRtpAddress = pack.answererRtpIP;
@@ -571,15 +573,16 @@ public class TerminalCall extends CommonCall {
         callMsg.rtpPTime = pack.pTime;
         callMsg.rtpCodec = pack.codec;
         callMsg.audioMode = audioMode;
-        
+
         LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Call Answer Req for CallID = %s, and Send Answer Res to Server! ",devID,callID);
-//        LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Open Audio sample=%d,ptime=%d,codec=%d",devID,pack.sample,pack.pTime,pack.codec);
-//        audioId = AudioMgr.OpenAudio(devID,localRtpPort,remoteRtpPort,remoteRtpAddress,pack.sample,pack.pTime,pack.codec,audioMode);
+        //        LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Open Audio sample=%d,ptime=%d,codec=%d",devID,pack.sample,pack.pTime,pack.codec);
+        //        audioId = AudioMgr.OpenAudio(devID,localRtpPort,remoteRtpPort,remoteRtpAddress,pack.sample,pack.pTime,pack.codec,audioMode);
 
         Transaction answerResTrans = new Transaction(devID,pack,answerResPack,Transaction.TRANSCATION_DIRECTION_C2S);
         HandlerMgr.AddPhoneTrans(answerResPack.msgID,answerResTrans);
 
         HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
+        LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Call Answer Req for CallID  %s , call Type %d from Server  ",devID,callID,callMsg.callType);
         return status;
 
     }
@@ -595,7 +598,7 @@ public class TerminalCall extends CommonCall {
             HandlerMgr.AddPhoneTrans(updateReqP.msgID,updateReqTrans);
             updateTick = CommonCall.UPDATE_INTERVAL;
         }
-        
+
         if(state==CALL_STATE_INCOMING){
             if(autoAnswerTime>=0&&type==CALL_TYPE_BROADCAST){
                 if(autoAnswerTick<=autoAnswerTime){
@@ -610,7 +613,7 @@ public class TerminalCall extends CommonCall {
     }
 
     public void InviteTimeOver(){
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.devId = devID;
             alertMsg.alertID = callID;
@@ -628,7 +631,7 @@ public class TerminalCall extends CommonCall {
             HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
         }
     }
-    
+
     public void AnswerTimeOver(){
         UserCallMessage callMsg = new UserCallMessage();
         callMsg.devId = devID;
@@ -640,7 +643,7 @@ public class TerminalCall extends CommonCall {
     }
 
     public void EndTimeOver(){
-        if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             UserAlertMessage alertMsg = new UserAlertMessage();
             alertMsg.devId = devID;
             alertMsg.alertID = callID;
@@ -664,7 +667,7 @@ public class TerminalCall extends CommonCall {
         boolean removeCall = false;
         updateTimeOverCount++;
         if(updateTimeOverCount>=2){
-            if(type>=CommonCall.ALERT_TYPE_BEGIN&&type<=CommonCall.ALERT_TYPE_ENDED){
+            if(CommonCall.IsAlertCall(type)){
                 UserAlertMessage alertMsg = new UserAlertMessage();
                 alertMsg.devId = devID;
                 alertMsg.alertID= callID;
@@ -682,12 +685,12 @@ public class TerminalCall extends CommonCall {
                 HandlerMgr.SendMessageToUser(UserCallMessage.MESSAGE_CALL_INFO,callMsg);
             }
             removeCall = true;
-    //        if(!audioId.isEmpty())
-    //            AudioMgr.CloseAudio(audioId);
+            //        if(!audioId.isEmpty())
+            //            AudioMgr.CloseAudio(audioId);
         }
         return removeCall;
     }
-   
+
     private InviteReqPack BuildInvitePacket(TerminalDeviceInfo info){
         InviteReqPack invitePack = new InviteReqPack();
         TerminalPhone phone = HandlerMgr.GetPhoneDev(caller);
@@ -721,7 +724,7 @@ public class TerminalCall extends CommonCall {
             invitePack.autoAnswerTime  = -1;
         }
 
-        if(type>=ALERT_TYPE_BEGIN&&type<=ALERT_TYPE_ENDED){
+        if(CommonCall.IsAlertCall(type)){
             // do nothing
         }
         return invitePack;
@@ -795,7 +798,7 @@ public class TerminalCall extends CommonCall {
 
     private AnswerVideoReqPack BuildAnswerVideoPacket(){
         AnswerVideoReqPack answerPack = new AnswerVideoReqPack();
-        
+
         answerPack.type = ProtocolPacket.CALL_VIDEO_ANSWER_REQ;
         answerPack.sender = devID;
         answerPack.receiver = PhoneParam.CALL_SERVER_ID;

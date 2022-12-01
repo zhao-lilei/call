@@ -1,6 +1,9 @@
 package com.example.nettytest.userinterface;
 
-import com.alibaba.fastjson.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+import com.example.nettytest.pub.AlertConfig;
 import com.example.nettytest.pub.AudioMode;
 import com.example.nettytest.pub.JsonPort;
 
@@ -53,6 +56,12 @@ public class PhoneParam {
     final static String JSON_AREA_ID_NAME = "area";
     final static String JSON_LOAD_MODE_NAME = "loadMode";
 
+    final static String JSON_ALERTS_NAME = "alerts";
+    final static String JSON_ALERT_DISPLAY_NAME = "display";
+    final static String JSON_ALERT_VOICE_NAME = "voice";
+    final static String JSON_ALERT_DEVTYPE_NAME = "devType";
+    final static String JSON_ALERT_TYPE_NAME = "type";
+
     final public static String CALL_SERVER_ID = "FFFFFFFF";
     final public static String BROAD_ADDRESS = "255.255.255.255";
     final public static int CLIENT_REG_EXPIRE = 60;
@@ -104,6 +113,7 @@ public class PhoneParam {
 
     public static ArrayList<UserDevice> devicesOnServer = new ArrayList<>();
     public static ArrayList<UserDevice> deviceList = new ArrayList<>();
+    public static ArrayList<AlertConfig> alertList = new ArrayList<>();
 
     public static int callServerPort = 10002;
     public static int callClientPort = 10002;
@@ -272,6 +282,10 @@ public class PhoneParam {
         JSONObject areaJson;
         JSONObject testAreas;
         UserDevice userdev;
+
+
+        JSONArray alertsJson;
+        JSONObject alert;
         int iTmp,jTmp;
 
         try {
@@ -282,6 +296,20 @@ public class PhoneParam {
             serverJson = json.getJSONObject(JSON_SERVE_NAME);
             serviceJson = json.getJSONObject(JSON_SERVICE_NAME);
             clientJson = json.getJSONObject(JSON_CLIENT_NAME);
+            alertsJson = json.getJSONArray(JSON_ALERTS_NAME);
+
+            if(alertsJson!=null){
+                AlertConfig alertConfig;
+                for(iTmp=0;iTmp<alertsJson.size();iTmp++){
+                    alert = alertsJson.getJSONObject(iTmp);
+                    alertConfig = new AlertConfig();
+                    alertConfig.voiceInfo = alert.getString(JSON_ALERT_VOICE_NAME);
+                    alertConfig.displayInfo = alert.getString(JSON_ALERT_DISPLAY_NAME);
+                    alertConfig.alertType = alert.getIntValue(JSON_ALERT_TYPE_NAME);
+                    alertConfig.nameType = alert.getIntValue(JSON_ALERT_DEVTYPE_NAME);
+                    alertList.add(alertConfig);
+                }
+            }
 
             if(serviceJson!=null){
                 serviceAddress = JsonPort.GetJsonString(serviceJson,JSON_ADDRESS_NAME);

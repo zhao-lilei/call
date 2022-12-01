@@ -38,7 +38,7 @@ public class ClientTest {
     public long testStartTime = 0;
     private int printSkip = 10;
 
-    static ClientSnapThread snapThread = null; 
+    static ClientSnapThread snapThread = null;
 
     class ClientSnapThread extends Thread{
         public ClientSnapThread(){
@@ -253,7 +253,7 @@ public class ClientTest {
                     matchedArea = null;
                     if(!dev.areaId.isEmpty()){
                         device = new TestDevice(dev.type, dev.devid,dev.netMode);
-                       for (TestArea area : areaList) {
+                        for (TestArea area : areaList) {
                             if (area.areaId.compareToIgnoreCase(dev.areaId) == 0) {
                                 matchedArea = area;
                                 break;
@@ -332,15 +332,19 @@ public class ClientTest {
         TerminalStatistics terminalstatics;
         BackEndStatistics backEndStatics;
 
+        if(type==UserMessage.MESSAGE_UNKNOW){
+            return false;
+        }
+
         if(type==UserMessage.MESSAGE_CALL_INFO
-            || type == UserMessage.MESSAGE_REG_INFO
-            || type == UserMessage.MESSAGE_DEVICES_INFO
-            || type == UserMessage.MESSAGE_CONFIG_INFO
-            || type == UserMessage.MESSAGE_SYSTEM_CONFIG_INFO
-            || type == UserMessage.MESSAGE_TRANSFER_INFO
-            || type == UserMessage.MESSAGE_LISTEN_CALL_INFO
-            || type == UserMessage.MESSAGE_VIDEO_INFO
-            || type == UserMessage.MESSAGE_ALERT_INFO ) {
+                || type == UserMessage.MESSAGE_REG_INFO
+                || type == UserMessage.MESSAGE_DEVICES_INFO
+                || type == UserMessage.MESSAGE_CONFIG_INFO
+                || type == UserMessage.MESSAGE_SYSTEM_CONFIG_INFO
+                || type == UserMessage.MESSAGE_TRANSFER_INFO
+                || type == UserMessage.MESSAGE_LISTEN_CALL_INFO
+                || type == UserMessage.MESSAGE_VIDEO_INFO
+                || type == UserMessage.MESSAGE_ALERT_INFO ) {
             areaPos = 0;
             String devId = msg.devId;
 
@@ -361,7 +365,7 @@ public class ClientTest {
                                     if(regMsg.isReg){
                                         StartClientSnap(regMsg.snapPort);
                                     }
-                                    
+
                                     break;
                                 case UserMessage.MESSAGE_DEVICES_INFO:
                                     dev.UpdateDeviceList((UserDevsMessage)msg);
