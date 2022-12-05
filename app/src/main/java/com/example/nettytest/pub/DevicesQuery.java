@@ -574,6 +574,7 @@ public class DevicesQuery {
                     device.bedName = JsonPort.GetJsonString(jsonDevice,JSON_BED_NAME_NAME);
                     device.roomId =JsonPort.GetJsonString(jsonDevice,JSON_ROOM_ID_NAME);
                     device.roomName = JsonPort.GetJsonString(jsonDevice,JSON_ROOM_NAME_NAME);
+                    device.devName = JsonPort.GetJsonString(jsonDevice,JSON_DEVICE_NAME_NAME);
 
                     if(device.type == UserInterface.CALL_BED_DEVICE){
                         bedNum++;
@@ -613,6 +614,7 @@ public class DevicesQuery {
                     deviceInfo.roomId = JsonPort.GetJsonString(jsonDevice,JSON_ROOM_ID_NAME);
                     deviceInfo.roomName = JsonPort.GetJsonString(jsonDevice,JSON_ROOM_NAME_NAME);
                     deviceInfoList.add(deviceInfo);
+                    LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_INFO, "Area %s Has Device %s(%s)",areaId,device.devid,deviceInfo.deviceName);
 
                 }
                 UserInterface.UpdateAreaDevices(areaId,userDeviceList,deviceInfoList);

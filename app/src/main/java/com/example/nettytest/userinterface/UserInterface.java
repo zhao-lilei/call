@@ -28,6 +28,7 @@ public class UserInterface {
     public final static int CALL_EMERGENCY_DEVICE = 4;
     public final static int CALL_DOOR_LIGHT_DEVICE = 5;
     public final static int CALL_WHITE_BOARD_DEVICE = 10;
+    public final static int CALL_DOCTOR_DEVICE = 11;
     public final static int CALL_SERVER_DEVICE = 90;
     public final static int CALL_UNKNOW_DEVICE = 100;
 
@@ -186,6 +187,9 @@ public class UserInterface {
             case CALL_NURSER_DEVICE:
                 typeInServer = BackEndPhone.NURSE_CALL_DEVICE;
                 break;
+            case CALL_DOCTOR_DEVICE:
+                typeInServer = BackEndPhone.DOCTOR_CALL_DEVICE;
+                break;
             case CALL_TV_DEVICE:
                 typeInServer = BackEndPhone.TV_CALL_DEVICE;
                 break;
@@ -259,6 +263,9 @@ public class UserInterface {
                 break;
             case CALL_NURSER_DEVICE:
                 HandlerMgr.CreateTerminalPhone(ID, TerminalPhone.NURSE_CALL_DEVICE,netType);
+                break;
+            case CALL_DOCTOR_DEVICE:
+                HandlerMgr.CreateTerminalPhone(ID, TerminalPhone.DOCTOR_CALL_DEVICE,netType);
                 break;
             case CALL_DOOR_DEVICE:
                 HandlerMgr.CreateTerminalPhone(ID, TerminalPhone.DOOR_CALL_DEVICE,netType);
@@ -532,6 +539,9 @@ public class UserInterface {
             case CALL_NURSER_DEVICE:
                 name = "nurser";
                 break;
+            case CALL_DOCTOR_DEVICE:
+                name = "doctor";
+                break;
             case CALL_TV_DEVICE:
                 name = "TV";
                 break;
@@ -561,6 +571,8 @@ public class UserInterface {
             type = CALL_DOOR_DEVICE;
         else if(name.compareToIgnoreCase("nurser")==0)
             type = CALL_NURSER_DEVICE;
+        else if(name.compareToIgnoreCase("doctor")==0)
+            type = CALL_DOCTOR_DEVICE;
         else if(name.compareToIgnoreCase("TV")==0)
             type = CALL_TV_DEVICE;
         else if(name.compareToIgnoreCase("emergency")==0)

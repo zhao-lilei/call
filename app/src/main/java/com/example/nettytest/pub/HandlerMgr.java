@@ -454,6 +454,9 @@ public class HandlerMgr {
                 case PhoneDevice.NURSE_CALL_DEVICE:
                     userDev.type = UserInterface.CALL_NURSER_DEVICE;
                     break;
+                case PhoneDevice.DOCTOR_CALL_DEVICE:
+                    userDev.type = UserInterface.CALL_DOCTOR_DEVICE;
+                    break;
                 case PhoneDevice.EMER_CALL_DEVICE:
                     userDev.type = UserInterface.CALL_EMERGENCY_DEVICE;
                     break;

@@ -214,12 +214,15 @@ public class TerminalPhone extends PhoneDevice {
         devsMsg.devId = id;
         for(int iTmp=0;iTmp<p.phoneList.size();iTmp++){
             PhoneDevice pDevice = p.phoneList.get(iTmp);
-            if(pDevice.type == PhoneDevice.BED_CALL_DEVICE) {
+            if(pDevice.id.compareToIgnoreCase(id)==0)
+                continue;
+            if(pDevice.type == PhoneDevice.BED_CALL_DEVICE||pDevice.type== PhoneDevice.NURSE_CALL_DEVICE||pDevice.type== PhoneDevice.DOCTOR_CALL_DEVICE) {
                 UserDevice tDevice = new UserDevice();
                 tDevice.devid = pDevice.id;
                 tDevice.isRegOk = pDevice.isReg;
                 tDevice.type = pDevice.type;
                 tDevice.bedName = pDevice.bedName;
+                tDevice.devName = pDevice.devName;
                 devsMsg.deviceList.add(tDevice);
             }
         }

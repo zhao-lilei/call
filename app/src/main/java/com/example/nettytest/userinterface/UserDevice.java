@@ -4,6 +4,7 @@ public class    UserDevice {
     public int type;
     public String devid;
     public String areaId;
+    public String devName;
     public String bedName;
     public String roomId;
     public String roomName;

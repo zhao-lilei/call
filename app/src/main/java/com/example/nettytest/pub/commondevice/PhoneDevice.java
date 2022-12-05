@@ -4,6 +4,7 @@ public class PhoneDevice {
     public static final int BED_CALL_DEVICE = 2;
     public static final int DOOR_CALL_DEVICE = 6;
     public static final int NURSE_CALL_DEVICE = 9;
+    public static final int DOCTOR_CALL_DEVICE = 11;
     public static final int TV_CALL_DEVICE = 8;
     public static final int CORRIDOR_CALL_DEVICE = 7;
     public static final int EMER_CALL_DEVICE = 4;
@@ -13,12 +14,14 @@ public class PhoneDevice {
 
     public String id;
     public String bedName;
+    public String devName;
     public int type;
     public boolean isReg;
 
     public PhoneDevice(){
         id = "";
         bedName = "";
+        devName = "";
         isReg = false;
         type = PhoneDevice.UNKNOW_CALL_DEVICE;
     }
@@ -32,6 +35,9 @@ public class PhoneDevice {
                 break;
             case DOOR_CALL_DEVICE:
                 name = "door_device";
+                break;
+            case DOCTOR_CALL_DEVICE:
+                name = "doctor_device";
                 break;
             case NURSE_CALL_DEVICE:
                 name = "nurser_device";

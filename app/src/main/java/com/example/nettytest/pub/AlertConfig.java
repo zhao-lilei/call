@@ -8,11 +8,13 @@ public class AlertConfig {
 
     public int alertType;
     public int nameType;
+    public int duration;//time duration(s)
     public String voiceInfo;
     public String displayInfo;
 
     public AlertConfig(){
         alertType = 0;
+        duration = 0;
         nameType = USE_DEVICE_NAME;
         voiceInfo = "";
         displayInfo = "";

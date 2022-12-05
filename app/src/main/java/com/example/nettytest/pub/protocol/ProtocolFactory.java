@@ -225,6 +225,7 @@ public class ProtocolFactory {
                                 phone.type = jsonObj.getIntValue(ProtocolPacket.PACKET_DEVTYPE_NAME);
                                 phone.isReg = jsonObj.getBooleanValue(ProtocolPacket.PACKET_STATUS_NAME);
                                 phone.bedName = JsonPort.GetJsonString(jsonObj,ProtocolPacket.PACKET_BEDID_NAME);
+                                phone.devName = JsonPort.GetJsonString(jsonObj,ProtocolPacket.PACKET_DEVICE_NAME_NAME);
                                 devResP.phoneList.add(phone);
                             }
                         }
@@ -628,6 +629,7 @@ public class ProtocolFactory {
                         phoneJson.put(ProtocolPacket.PACKET_DEVTYPE_NAME,phone.type);
                         phoneJson.put(ProtocolPacket.PACKET_STATUS_NAME,phone.isReg);
                         phoneJson.put(ProtocolPacket.PACKET_BEDID_NAME,phone.bedName);
+                        phoneJson.put(ProtocolPacket.PACKET_DEVICE_NAME_NAME,phone.devName);
                         listArray.add(phoneJson);
                     }
                     context.put(ProtocolPacket.PACKET_DETAIL_NAME,listArray);

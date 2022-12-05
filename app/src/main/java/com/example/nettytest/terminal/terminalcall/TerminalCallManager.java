@@ -176,7 +176,7 @@ public class TerminalCallManager {
             return null;
         }
 
-        if(devType== TerminalPhone.NURSE_CALL_DEVICE)
+        if(devType== TerminalPhone.NURSE_CALL_DEVICE||devType== TerminalPhone.DOCTOR_CALL_DEVICE)
             direction = CommonCall.CALL_DIRECT_M2S;
         else
             direction = CommonCall.CALL_DIRECT_S2M;

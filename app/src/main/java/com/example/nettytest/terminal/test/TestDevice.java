@@ -292,7 +292,10 @@ public class TestDevice extends UserDevice{
                             if(type==UserInterface.CALL_EMERGENCY_DEVICE)
                                 opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_EMERGENCY_TYPE);
                             else{
-                                opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_ASSIST_TYPE);
+                                if(devid.compareToIgnoreCase("10100001")==0)
+                                    opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_ASSIST_TYPE);
+                                else
+                                    opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_NORMAL_TYPE);
                                 //                            opResult = BuildAlert(1);
                             }
                             if(opResult.result != OperationResult.OP_RESULT_OK){

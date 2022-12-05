@@ -801,6 +801,7 @@ public class BackEndCallConvergence {
                 case BackEndPhone.BED_CALL_DEVICE:
                 case BackEndPhone.DOOR_CALL_DEVICE:
                 case BackEndPhone.NURSE_CALL_DEVICE:
+                case BackEndPhone.DOCTOR_CALL_DEVICE:
                     if (inviteCall.caller.compareToIgnoreCase(phone.id) == 0){
                         LogWork.Print(LogWork.BACKEND_CALL_MODULE,LogWork.LOG_ERROR,"Dev %s is Caller In Call %s",phone.id,inviteCall.callID);
                         result = false;
@@ -851,6 +852,9 @@ public class BackEndCallConvergence {
                     case BackEndPhone.NURSE_CALL_DEVICE:
                     case BackEndPhone.TV_CALL_DEVICE:
                         break;
+                    case BackEndPhone.DOCTOR_CALL_DEVICE:
+                        result = false;  //  ҽ��������������Ѫ�Ǽ�ʱ�Ⱥ���
+                        break;
                 }
             }else{
                 switch(callType){
@@ -869,6 +873,12 @@ public class BackEndCallConvergence {
                             case BackEndPhone.DOOR_CALL_DEVICE:
                             case BackEndPhone.NURSE_CALL_DEVICE:
                             case BackEndPhone.TV_CALL_DEVICE:
+                                break;
+                            case BackEndPhone.DOCTOR_CALL_DEVICE:
+                                // ҽ��������������Ŀ�ĺ����е���Ԯ���кͽ�������
+                                if(callType!=CommonCall.CALL_TYPE_ASSIST&& callType!=CommonCall.CALL_TYPE_EMERGENCY){
+                                    result = false;
+                                }
                                 break;
                         }
                         break;
@@ -897,6 +907,7 @@ public class BackEndCallConvergence {
                             case BackEndPhone.NURSE_CALL_DEVICE:
                             case BackEndPhone.TV_CALL_DEVICE:
                             case BackEndPhone.EMER_CALL_DEVICE:
+                            case BackEndPhone.DOCTOR_CALL_DEVICE:
                                 result = false;
                                 break;
                         }
@@ -970,6 +981,8 @@ public class BackEndCallConvergence {
                     }
                     break;
                 case BackEndPhone.NURSE_CALL_DEVICE:
+                    break;
+                case BackEndPhone.DOCTOR_CALL_DEVICE:  //   ҽ����������ֱ�ӱ���
                     break;
                 case BackEndPhone.CORRIDOR_CALL_DEVICE:
                 case BackEndPhone.DOOR_CALL_DEVICE:

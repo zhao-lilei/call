@@ -304,7 +304,7 @@ public class BackEndPhoneManager {
                 result = FailReason.FAIL_REASON_HASEXIST;
             }else{
                 area = new BackEndZone(areaId,areaName);
-                area.alertConfigList = PhoneParam.alertList;
+                area.alertConfigList = new ArrayList<>(PhoneParam.alertMap.get(areaId));
 //                ArrayList<AlertConfig> configs = new ArrayList<>();
 //                AlertConfig defaultConfig = new AlertConfig();
 //                defaultConfig.alertType = 41;
@@ -848,7 +848,7 @@ public class BackEndPhoneManager {
                 if(phone==null){
                     resStatus = ProtocolPacket.STATUS_NOTFOUND;
                 }else{
-                    if(phone.type!=PhoneDevice.NURSE_CALL_DEVICE){
+                    if(phone.type!=PhoneDevice.NURSE_CALL_DEVICE&&phone.type!=PhoneDevice.DOCTOR_CALL_DEVICE){
                         resStatus = ProtocolPacket.STATUS_NOTSUPPORT;
                     }else{
                         if(state){

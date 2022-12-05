@@ -60,6 +60,8 @@ public class BackEndZone {
             dev.id = phone.id;
             dev.isReg = phone.isReg;
             dev.bedName = phone.devInfo.bedName;
+            dev.devName = phone.devInfo.deviceName;
+            LogWork.Print(LogWork.BACKEND_PHONE_MODULE,LogWork.LOG_INFO,"Get Device %s(%s) in area %s(%s)",dev.id,dev.devName,areaId,areaName);
             lists.add(dev);
         }
         return lists;
@@ -88,7 +90,7 @@ public class BackEndZone {
 
     public int NotifyTransferChangExcept(String devId){
         for(BackEndPhone phone:phoneList.values()){
-            if(phone.type==PhoneDevice.NURSE_CALL_DEVICE){
+            if(phone.type==PhoneDevice.NURSE_CALL_DEVICE||phone.type==PhoneDevice.DOCTOR_CALL_DEVICE){
                 if(devId.compareToIgnoreCase(phone.id)!=0){
                     TransferChangeReqPack req = new TransferChangeReqPack(phone.id);
                     req.sender = PhoneParam.CALL_SERVER_ID;
@@ -164,6 +166,7 @@ public class BackEndZone {
                                     isAdd = true;
                                 break;
                             case BackEndPhone.NURSE_CALL_DEVICE:
+                            case BackEndPhone.DOCTOR_CALL_DEVICE:
                                 isAdd = false;
                                 break;
                             case BackEndPhone.TV_CALL_DEVICE:
@@ -189,6 +192,7 @@ public class BackEndZone {
                                     isAdd = true;
                                 break;
                             case BackEndPhone.NURSE_CALL_DEVICE:
+                            case BackEndPhone.DOCTOR_CALL_DEVICE:
                                 isAdd = true;
                                 break;
                             case BackEndPhone.TV_CALL_DEVICE:
@@ -217,6 +221,12 @@ public class BackEndZone {
                             case BackEndPhone.NURSE_CALL_DEVICE:
                                 isAdd = true;
                                 break;
+                            case BackEndPhone.DOCTOR_CALL_DEVICE:
+                                if(callType==CommonCall.CALL_TYPE_ASSIST)
+                                    isAdd = true;
+                                else
+                                    isAdd = false;
+                                break;
                             case BackEndPhone.TV_CALL_DEVICE:
                                 if(params.normalCallToTV)
                                     isAdd = true;
@@ -242,6 +252,9 @@ public class BackEndZone {
                             break;
                         case BackEndPhone.NURSE_CALL_DEVICE:
                             isAdd = true;
+                            break;
+                        case BackEndPhone.DOCTOR_CALL_DEVICE:
+                            isAdd = false;
                             break;
                         case BackEndPhone.TV_CALL_DEVICE:
                             if(params.normalCallToTV)

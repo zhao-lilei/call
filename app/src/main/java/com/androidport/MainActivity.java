@@ -572,7 +572,7 @@ public class    MainActivity extends AppCompatActivity {
                     TestDevice dev = clientTest.GetCurTestDevice();
                     if(dev!=null) {
                         TextView tv = findViewById(R.id.deviceStatusId);
-                        if (dev.type == UserInterface.CALL_NURSER_DEVICE) {
+                        if (dev.type == UserInterface.CALL_NURSER_DEVICE||dev.type==UserInterface.CALL_DOCTOR_DEVICE) {
                             String status;
                             status = dev.GetNurserDeviceInfo();
                             tv.setText(status);
@@ -594,7 +594,7 @@ public class    MainActivity extends AppCompatActivity {
 
                     tv.setText(status);
 
-                    if (dev.type == UserInterface.CALL_NURSER_DEVICE) {
+                    if (dev.type == UserInterface.CALL_NURSER_DEVICE||dev.type==UserInterface.CALL_DOCTOR_DEVICE) {
                         dev.QueryDevs();
                     }
 
@@ -602,7 +602,7 @@ public class    MainActivity extends AppCompatActivity {
                     status = dev.GetCallInfo();
                     tv.setText(status);
                     Button bt = findViewById(R.id.increaseId);
-                    if(dev.type == UserInterface.CALL_NURSER_DEVICE){
+                    if(dev.type == UserInterface.CALL_NURSER_DEVICE||dev.type==UserInterface.CALL_DOCTOR_DEVICE){
                         if(dev.IsTalking()){
                             if(dev.isVideo)
                                 bt.setText("Close Video");

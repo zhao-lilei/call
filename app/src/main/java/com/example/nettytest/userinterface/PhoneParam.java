@@ -1,11 +1,16 @@
 package com.example.nettytest.userinterface;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.example.nettytest.pub.AlertConfig;
 import com.example.nettytest.pub.AudioMode;
 import com.example.nettytest.pub.JsonPort;
+import com.example.nettytest.pub.LogWork;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +22,20 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class PhoneParam {
     final static String JSON_SERVE_NAME = "server";
@@ -113,7 +131,7 @@ public class PhoneParam {
 
     public static ArrayList<UserDevice> devicesOnServer = new ArrayList<>();
     public static ArrayList<UserDevice> deviceList = new ArrayList<>();
-    public static ArrayList<AlertConfig> alertList = new ArrayList<>();
+    public static Map<String, List<AlertConfig>> alertMap = Collections.emptyMap();
 
     public static int callServerPort = 10002;
     public static int callClientPort = 10002;
@@ -126,6 +144,7 @@ public class PhoneParam {
     public static boolean serviceActive = false;
     public static String serviceAddress = "127.0.0.1";
     public static int servicePort = 80;
+    public static int httpPort=9995;
     public static int logPort=9996;
     public static int serviceUpdateTime = 120;
     
@@ -163,6 +182,7 @@ public class PhoneParam {
     public final static String VER_STR = "1.2.5";
 
     public static String localAddress = "";
+    public static final CountDownLatch waitHttp = new CountDownLatch(1);
 
     static private UserDevice CheckUserDevice(JSONObject device){
         UserDevice userdev = new UserDevice();
@@ -296,20 +316,22 @@ public class PhoneParam {
             serverJson = json.getJSONObject(JSON_SERVE_NAME);
             serviceJson = json.getJSONObject(JSON_SERVICE_NAME);
             clientJson = json.getJSONObject(JSON_CLIENT_NAME);
-            alertsJson = json.getJSONArray(JSON_ALERTS_NAME);
+//            alertsJson = json.getJSONArray(JSON_ALERTS_NAME);
+//
+//            if(alertsJson!=null){
+//                AlertConfig alertConfig;
+//                for(iTmp=0;iTmp<alertsJson.size();iTmp++){
+//                    alert = alertsJson.getJSONObject(iTmp);
+//                    alertConfig = new AlertConfig();
+//                    alertConfig.voiceInfo = alert.getString(JSON_ALERT_VOICE_NAME);
+//                    alertConfig.displayInfo = alert.getString(JSON_ALERT_DISPLAY_NAME);
+//                    alertConfig.alertType = alert.getIntValue(JSON_ALERT_TYPE_NAME);
+//                    alertConfig.nameType = alert.getIntValue(JSON_ALERT_DEVTYPE_NAME);
+//                    alertList.add(alertConfig);
+//                }
+//            }
 
-            if(alertsJson!=null){
-                AlertConfig alertConfig;
-                for(iTmp=0;iTmp<alertsJson.size();iTmp++){
-                    alert = alertsJson.getJSONObject(iTmp);
-                    alertConfig = new AlertConfig();
-                    alertConfig.voiceInfo = alert.getString(JSON_ALERT_VOICE_NAME);
-                    alertConfig.displayInfo = alert.getString(JSON_ALERT_DISPLAY_NAME);
-                    alertConfig.alertType = alert.getIntValue(JSON_ALERT_TYPE_NAME);
-                    alertConfig.nameType = alert.getIntValue(JSON_ALERT_DEVTYPE_NAME);
-                    alertList.add(alertConfig);
-                }
-            }
+            queryCallTypes();
 
             if(serviceJson!=null){
                 serviceAddress = JsonPort.GetJsonString(serviceJson,JSON_ADDRESS_NAME);
@@ -403,10 +425,103 @@ public class PhoneParam {
                 }
             }
             json.clear();
-        } catch (JSONException e) {
+
+            if (Collections.emptyMap() == (Map)alertMap) {
+                waitHttp.await(10, TimeUnit.SECONDS);
+            }
+        } catch (JSONException|InterruptedException e) {
             e.printStackTrace();
         }
     }
+
+    private static void httpGetProcess(String url, Callback cb) {
+        OkHttpClient client =  new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
+                    public Response intercept(Interceptor.Chain chain) throws IOException {
+                        Request request = chain.request();
+                        Response response = chain.proceed(request);
+                        return response;
+                    }
+                })
+                .connectTimeout(4000, TimeUnit.MILLISECONDS)
+                .readTimeout(4000,TimeUnit.MILLISECONDS)
+                .writeTimeout(4000, TimeUnit.MILLISECONDS)
+                .build();
+
+
+        final Request req = new Request.Builder().url(url).get().build();
+
+        Call call = client.newCall(req);
+
+        call.enqueue(cb);
+    }
+
+    private static void queryCallTypes() {
+        if (alertMap.size() > 0) {
+            alertMap.clear();
+        }
+
+        final String url = String.format("http://%s:%d/callType/query", serviceAddress, httpPort);
+
+        httpGetProcess(url,new Callback() {
+            @Override
+            public void onFailure(Call c, IOException e) {
+                LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_ERROR, String.format("Send %s Fail!!!!",url));
+                waitHttp.countDown();
+            }
+
+            @Override
+            public void onResponse(Call c, Response res) {
+                LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG, String.format("receive callTypes !!!!",url));
+                if(res.code()==200) {
+                    try {
+                        String resValue =new String(res.body().bytes(),"UTF-8");
+                        parseAlterConfig(resValue);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                waitHttp.countDown();
+                res.close();
+            }
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private static void parseAlterConfig(String resValue){
+        class TempAlter {
+            public String areaCode;
+            public Integer type;
+            public Integer devType;
+            public String display;
+            public String voice;
+            public Integer duration;
+        }
+
+        JSONObject object = JSONObject.parseObject(resValue);
+        try {
+            Map<String, List<AlertConfig>> tempMap = new HashMap();
+            JSONArray array = object.getJSONObject("result").getJSONArray("list");
+            if (array.size() > 0) {
+                List<TempAlter> alertList = JSONObject.parseArray(JSONObject.toJSONString(array),TempAlter.class);
+                for (TempAlter alert : alertList) {
+                    AlertConfig cfg = new AlertConfig();
+                    cfg.voiceInfo = alert.voice;
+                    cfg.displayInfo = alert.display;
+                    cfg.alertType = alert.type;
+                    cfg.nameType = alert.devType;
+                    cfg.duration = alert.duration;
+                    //
+                    List<AlertConfig> configList = tempMap.computeIfAbsent(alert.areaCode,(s)->new ArrayList<>());
+                    configList.add(cfg);
+                }
+                alertMap = tempMap;
+            }
+        }catch (Exception e) {
+            LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG, "alter config json parse failed");
+        }
+    }
+
 
     public static void InitPhoneParam(String path,String fileName){
 
