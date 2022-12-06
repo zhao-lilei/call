@@ -80,7 +80,7 @@ public class TerminalCall extends CommonCall {
         resPack.result = ProtocolPacket.GetResString(resPack.status);
 
         Transaction inviteResTransaction = new Transaction(devID,pack,resPack,Transaction.TRANSCATION_DIRECTION_C2S);
-        LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Invite From %s to %s, CallID = %s",devID,caller,callee,callID);
+        LogWork.Print(LogWork.TERMINAL_CALL_MODULE,LogWork.LOG_DEBUG,"Phone %s Recv Invite From %s to %s, CallID = %s, callType=%d, display=%s, voice=%s",devID,caller,callee,callID,pack.callType,pack.displayInfo,pack.voiceInfo);
         HandlerMgr.AddPhoneTrans(pack.msgID,inviteResTransaction);
 
         if(CommonCall.IsAlertCall(pack.callType)){

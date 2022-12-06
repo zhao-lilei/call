@@ -294,6 +294,8 @@ public class TestDevice extends UserDevice{
                             else{
                                 if(devid.compareToIgnoreCase("10100001")==0)
                                     opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_ASSIST_TYPE);
+                                else if(devid.compareToIgnoreCase("10100002")==0)
+                                    opResult = BuildAlert(43);
                                 else
                                     opResult = BuildCall(PhoneParam.CALL_SERVER_ID,UserInterface.CALL_NORMAL_TYPE);
                                 //                            opResult = BuildAlert(1);

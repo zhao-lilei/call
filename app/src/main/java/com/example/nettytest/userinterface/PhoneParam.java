@@ -331,7 +331,7 @@ public class PhoneParam {
 //                }
 //            }
 
-            queryCallTypes();
+//            queryCallTypes();
 
             if(serviceJson!=null){
                 serviceAddress = JsonPort.GetJsonString(serviceJson,JSON_ADDRESS_NAME);

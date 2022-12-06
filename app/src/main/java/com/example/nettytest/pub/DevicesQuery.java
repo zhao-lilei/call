@@ -56,12 +56,19 @@ public class DevicesQuery {
     final static String JSON_PARAM_PARAM_VALUE = "param_val";
     final static String JSON_PARAM_PARAM_ID = "param_id";
 
+    final static String JSON_ALERT_ALERT_TYPE = "type";
+    final static String JSON_ALERT_DEV_TYPE = "devType";
+    final static String JSON_ALERT_ALERT_DISPLAY = "display";
+    final static String JSON_ALERT_ALERT_DURATION = "duration";
+    final static String JSON_ALERT_ALERT_VOICE = "voice";
+
     final static int JSON_STATUS_OK = 200;
     
     static final int QUERY_TIMER_TICK = 1;
     static final int QUERY_AREAS_RES = 2;
     static final int QUERY_DEVICES_RES = 3;
     static final int QUERY_PARAMS_RES = 4;
+    static final int QUERY_ALERT_RES=5;
     static final int QUERY_FAIL_REPORT = 100;
     static final int QUERY_UNKNOW_MSG = 200;
     
@@ -69,6 +76,7 @@ public class DevicesQuery {
     static final int QUERY_STATE_AREAS = 1;
     static final int QUERY_STATE_DEVICES = 2;
     static final int QUERY_STATE_PARAMS = 3;
+    static final int QUERY_STATE_ALERT = 4;
     
     static final int QUERY_RETRY_TIME = 10;
 
@@ -305,13 +313,49 @@ public class DevicesQuery {
 
                 if(areaPos>=areas.size()){
                     LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,"Http Finish All Devices and Params Query of %d areas!!!!!!!!!!!",areas.size());
-                    ResetQuery();
+                    areaPos=0;
+                    area = areas.get(areaPos);
+                    QueryAlertCall(area.areaId);
+                    state = QUERY_STATE_ALERT;
                 }else{
                     area = areas.get(areaPos);
 //                    LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,"Http Query Begin Query Param in %d Aear %s",areaPos+1,area.areaId);
                     QueryParams(area.areaId);
                 }
             }
+            break;
+            case QUERY_STATE_ALERT:
+                if(msg.type == QUERY_TIMER_TICK) {
+                    tickCount++;
+                    if(tickCount>QUERY_RETRY_TIME) {
+                        tickCount = 0;
+                        retryCount++;
+                        area = areas.get(areaPos);
+                        if(retryCount<QUERY_RETRY_MAX){
+                            LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,"Http Query Alert in Area %s TimerOver %d time, Retry Query",area.areaId,retryCount);
+                            QueryParams(area.areaId);
+                        }else{
+                            LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,"Http Query Alert in Param %s TimerOver %d time, Reset Query !!!!!!!!!!",area.areaId,retryCount);
+                            ResetQuery();
+                        }
+                    }
+                }else if(msg.type== QUERY_ALERT_RES){
+                    tickCount = 0;
+//                LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_INFO,"Recv Alert Res For Area %s, data=%s",msg.areaId,msg.res);
+
+                    UpdateAlertCall(msg.areaId,msg.res);
+
+                    areaPos++;
+
+                    if(areaPos>=areas.size()){
+                        LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,"Http Finish All Devices and Params Query of %d areas!!!!!!!!!!!",areas.size());
+                        ResetQuery();
+                    }else{
+                        area = areas.get(areaPos);
+                        LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,"Http Query Begin Query Alert in %d Aear %s",areaPos+1,area.areaId);
+                        QueryAlertCall(area.areaId);
+                    }
+                }
             break;
         }
     }
@@ -455,6 +499,41 @@ public class DevicesQuery {
         
     }
 
+    private void QueryAlertCall(final String areaId) {
+        final String url = String.format("http://%s:%d/callType/query?areaCode=%s",serviceAddress,servicePort,areaId);
+
+        httpGetProcess(url,new Callback() {
+            @Override
+            public void onFailure(Call c, IOException e) {
+                LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_ERROR, String.format("Recv Fail %s of Req %s in Thread %d!!!!",e.getMessage(),url,Thread.currentThread().getId()));
+            }
+            @Override
+            public void onResponse(Call c, Response res) {
+                LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG, String.format("Recv Res for Req %s in Thread %d !!!!",url,Thread.currentThread().getId()));
+
+                if(res.code()==200) {
+                    try {
+                        String resValue =res.body().string();
+//                        String resValue =new String(res.body().bytes(),"UTF-8");
+                        QueryMessage msg = new QueryMessage();
+                        msg.type = QUERY_ALERT_RES;
+                        msg.res = resValue;
+                        msg.areaId = areaId;
+
+                        synchronized(msgList) {
+                            msgList.add(msg);
+                            msgList.notify();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                res.close();
+//                LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_DEBUG,String.format("Get %d params for area %s From Res !!!!",result,areaId));
+            }
+        });
+
+    }
 
     private boolean UpdateCallParam(CallParams param,JSONObject jsonObj){
 
@@ -533,7 +612,54 @@ public class DevicesQuery {
         return result;
     }
 
-    
+
+    private int UpdateAlertCall(String areaId,String data){
+        int result = -1;
+        int status;
+        int iTmp;
+        JSONObject json;
+        JSONObject resultJson;
+        JSONArray alertList;
+        JSONObject alertItem;
+        ArrayList<AlertConfig> configList = new ArrayList<>();
+
+        try{
+            json=JSONObject.parseObject(data);
+            if(json==null)
+                return -1;
+
+            status = json.getIntValue(JSON_STATUS_NAME);
+            if(JSON_STATUS_OK == status) {
+                resultJson = json.getJSONObject(JSON_RESULT_NAME);
+                if(resultJson==null)
+                    return -2;
+                alertList = resultJson.getJSONArray(JSON_LIST_NAME);
+                if(alertList==null)
+                    return -3;
+                result = 0;
+                for(iTmp=0;iTmp<alertList.size();iTmp++){
+                    AlertConfig config = new AlertConfig();
+                    alertItem = alertList.getJSONObject(iTmp);
+                    config.alertType = alertItem.getIntValue(JSON_ALERT_ALERT_TYPE);
+                    config.nameType = alertItem.getIntValue(JSON_ALERT_DEV_TYPE);
+                    config.duration = alertItem.getIntValue(JSON_ALERT_ALERT_DURATION);
+                    config.displayInfo = JsonPort.GetJsonString(alertItem, JSON_ALERT_ALERT_DISPLAY);
+                    config.voiceInfo= JsonPort.GetJsonString(alertItem, JSON_ALERT_ALERT_VOICE);
+//                    LogWork.Print(LogWork.DEBUG_MODULE,LogWork.LOG_INFO, "Area %s Has Alert Type=%d, info=%s ",areaId,config.alertType,config.displayInfo);
+                    configList.add(config);
+                    result++;
+                }
+
+                UserInterface.UpdateAlertConfig(areaId, configList);
+            }
+            json.clear();
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     private int UpdateDevices(String areaId,String areaName,String data) {
         int status;
         int iTmp;
